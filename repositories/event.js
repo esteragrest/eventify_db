@@ -1,8 +1,6 @@
 const { Op } = require("sequelize");
 const Event = require("../models/Event");
 
-// Get /events/weekly-events – получение мероприятий текущей недели(любой пользователь)
-
 class EventRepository {
   async create(event) {
     return await Event.create(event);
