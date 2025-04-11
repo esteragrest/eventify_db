@@ -32,24 +32,26 @@ class EventRepository {
     });
   }
 
-  async findActiveEvents() {
+  async findActiveEvents(userId) {
     const currentDate = new Date();
     return await Event.findAll({
       where: {
         date: {
           [Op.gte]: currentDate,
         },
+        user_id: userId,
       },
     });
   }
 
-  async findArchivedEvents() {
+  async findArchivedEvents(userId) {
     const currentDate = new Date();
     return await Event.findAll({
       where: {
         date: {
           [Op.lt]: currentDate,
         },
+        user_id: userId,
       },
     });
   }
