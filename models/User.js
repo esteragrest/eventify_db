@@ -39,7 +39,7 @@ const User = sequelize.define(
     },
     role_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      defaultValue: 2,
       references: {
         model: Role,
         key: "id",
@@ -48,7 +48,7 @@ const User = sequelize.define(
     },
   },
   {
-    tableName: "Users",
+    tableName: "users",
   }
 );
 

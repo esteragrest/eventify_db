@@ -1,4 +1,4 @@
-const CommentRepository = require("../models/Comment");
+const CommentRepository = require("../repositories/comment");
 
 class CommentService {
   async createComment(commentData) {

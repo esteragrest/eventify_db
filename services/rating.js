@@ -1,4 +1,4 @@
-const RatingRepository = require("../models/Rating");
+const RatingRepository = require("../repositories/rating");
 
 class RatingService {
   async createRating(ratingData) {
