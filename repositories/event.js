@@ -18,8 +18,15 @@ class EventRepository {
     await Event.destroy({ where: { id } });
   }
 
-  async list() {
-    return await Event.findAll();
+  async list({ title, limit, offset }) {
+    const whereClause = title ? { title: { [Op.iLike]: `%${title}%` } } : {};
+
+    return await Event.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+      order: [["event_date", "ASC"]],
+    });
   }
 
   async findByTitle(title) {

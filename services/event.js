@@ -18,8 +18,22 @@ class EventService {
     await EventRepository.delete(id);
   }
 
-  async getAllEvents() {
-    return await EventRepository.list();
+  async getAllEvents({ title, limit, page }) {
+    limit = limit || 10;
+    page = page || 1;
+
+    const offset = (page - 1) * limit;
+
+    const eventsWithCount = await EventRepository.list({
+      title,
+      limit,
+      offset,
+    });
+
+    return {
+      events: eventsWithCount.rows,
+      lastPage: Math.ceil(eventsWithCount.count / limit),
+    };
   }
 
   async getEventsByTitle(title) {

@@ -2,7 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/auth");
-const usersRoutes = require("./routes/user")
+const usersRoutes = require("./routes/user");
+const eventsRoutes = require("./routes/event");
 
 const app = express();
 const PORT = 3000;
@@ -16,4 +17,5 @@ app.listen(PORT, () => {
 });
 
 app.use("/auth", authRoutes);
-app.use("/users", usersRoutes)
+app.use("/users", usersRoutes);
+app.use("/events", eventsRoutes);
