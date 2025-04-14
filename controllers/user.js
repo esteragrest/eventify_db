@@ -79,7 +79,8 @@ class UserController {
 
   async getCurrentUser(req, res) {
     try {
-      const userWithStats = await UserService.getCurrentUser(req.user.id);
+      const { id } = req.user;
+      const userWithStats = await UserService.getCurrentUser(id);
 
       if (!userWithStats || !userWithStats.user) {
         return res.status(404).json({ error: "User not Found" });
@@ -130,6 +131,53 @@ class UserController {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to update user" });
+    }
+  }
+
+  async updateUserRole(req, res) {
+    try {
+      const { id } = req.params;
+      const { roleId } = req.body;
+
+      if (!roleId) {
+        return res.status(400).json({ error: "Role ID is required." });
+      }
+
+      const user = await UserService.getUserById(id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      await UserService.updateUserRole(id, roleId);
+
+      res.status(200).json({ message: "User role updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update role." });
+    }
+  }
+
+  async deleteUser(req, res) {
+    try {
+      const targetUserId = Number(req.params.id);
+      const currentUserId = req.user.id;
+      const roleId = req.user.roleId;
+
+      if (targetUserId !== currentUserId && roleId !== ROLES.admin) {
+        return res.status(403).json({
+          message: "Forbidden: You do not have permission to delete this user.",
+        });
+      }
+
+      const user = await UserService.getUserById(targetUserId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      await UserService.deleteUser(targetUserId);
+      res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error.message);
+      res.status(500).json({ error: "Failed to delete user." });
     }
   }
 }

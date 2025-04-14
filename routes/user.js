@@ -1,6 +1,3 @@
-// Put users/role/:id – изменение роли пользователя (админ)
-// Delete /users/:id – удаление пользователя (сам пользователь, админ)
-
 const express = require("express");
 const UserController = require("../controllers/user");
 const isAdmin = require("../middlewares/isAdmin");
@@ -12,5 +9,9 @@ router.get("/", isAuthenticated, isAdmin, UserController.getAllUsers);
 router.get("/profile", isAuthenticated, UserController.getCurrentUser);
 
 router.put("/edit", isAuthenticated, UserController.updateUser);
+
+router.patch("/role/:id", isAuthenticated, isAdmin, UserController.updateUserRole)
+
+router.delete('/:id', isAuthenticated, UserController.deleteUser)
 
 module.exports = router;
