@@ -1,4 +1,5 @@
 const EventRepository = require("../repositories/event");
+const RegistrationRepository = require("../repositories/registration");
 
 class EventService {
   async createEvent(eventData) {
@@ -59,6 +60,20 @@ class EventService {
     }
 
     return events;
+  }
+
+  async getOfEventsAttended(userId) {
+    const registrations = await RegistrationRepository.findAllUserRegistrations(
+      userId
+    );
+
+    const eventIds = registrations.map((registration) => registration.event_id);
+
+    const countOfEventsAttended = await EventRepository.countOfEventsAttended(
+      eventIds
+    );
+
+    return countOfEventsAttended;
   }
 }
 

@@ -50,7 +50,7 @@ const Registration = sequelize.define(
     },
   },
   {
-    tableName: "Events",
+    tableName: "registrations",
   }
 );
 

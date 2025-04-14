@@ -16,6 +16,10 @@ class RegistrationRepository {
   async findRegistrationsByEventId(eventId) {
     return await Registration.findAll({ where: { event_id: eventId } });
   }
+
+  async findAllUserRegistrations(userId) {
+    return await Registration.findAll({ where: { user_id: userId } });
+  }
 }
 
 module.exports = new RegistrationRepository();

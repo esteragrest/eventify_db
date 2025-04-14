@@ -39,7 +39,7 @@ class EventRepository {
         date: {
           [Op.gte]: currentDate,
         },
-        user_id: userId,
+        organizer_id: userId,
       },
     });
   }
@@ -51,7 +51,7 @@ class EventRepository {
         date: {
           [Op.lt]: currentDate,
         },
-        user_id: userId,
+        organizer_id: userId,
       },
     });
   }
@@ -71,6 +71,25 @@ class EventRepository {
       limit: 8,
       order: [["date", "ASC"]],
     });
+  }
+
+  async countEventsByUserId(userId) {
+    return await Event.count({
+      where: {
+        organizer_id: userId,
+      },
+    });
+  }
+
+  async countOfEventsAttended(eventIds) {
+    const countOfEventsAttended = await Event.count({
+      where: {
+        id: { [Op.in]: eventIds },
+        event_date: { [Op.lt]: new Date() },
+      },
+    });
+
+    return countOfEventsAttended;
   }
 }
 

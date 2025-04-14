@@ -2,6 +2,7 @@ const UserService = require("../services/user");
 const bcrypt = require("bcrypt");
 const { generate } = require("../helpers/token");
 const ROLES = require("../constans/roles");
+const mapUser = require("../helpers/mapUser");
 
 class UserController {
   async createUser(req, res) {
@@ -65,6 +66,71 @@ class UserController {
   async logoutUser(req, res) {
     res.clearCookie("token", { httpOnly: true });
     res.status(200).json({ message: "Logout successful" });
+  }
+
+  async getAllUsers(req, res) {
+    try {
+      const users = await UserService.getAllUsers();
+      res.status(200).json(users.map(mapUser));
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getCurrentUser(req, res) {
+    try {
+      const userWithStats = await UserService.getCurrentUser(req.user.id);
+
+      if (!userWithStats || !userWithStats.user) {
+        return res.status(404).json({ error: "User not Found" });
+      }
+
+      res.status(200).json({
+        user: mapUser(userWithStats.user),
+        countUserEvents: userWithStats.countUserEvents,
+        countOfEventsAttended: userWithStats.countOfEventsAttended,
+      });
+    } catch (error) {
+      console.error("Error fetching user:", error.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  async updateUser(req, res) {
+    try {
+      const { id } = req.user;
+      const updateData = req.body;
+
+      const user = await UserService.getUserById(id);
+      if (!user) {
+        return res.status(404).json({ error: "User not Found" });
+      }
+
+      if (user.id !== id && Number(req.user.roleId) !== ROLES.admin) {
+        return res.status(403).json({
+          message: "Forbidden: You do not have permission to update this user.",
+        });
+      }
+
+      if (updateData.password) {
+        const hashedPassword = await bcrypt.hash(updateData.password, 10);
+        updateData.password = hashedPassword;
+      }
+
+      if (updateData.roleId && updateData.roleId === ROLES.admin) {
+        return res.status(403).json({
+          message: "Forbidden: Only admins can create other admins.",
+        });
+      }
+
+      await UserService.updateUser(id, updateData);
+
+      res.status(200).json({
+        message: "User updated successfully",
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user" });
+    }
   }
 }
 

@@ -1,4 +1,6 @@
 const UserRepository = require("../repositories/user");
+const EventRepository = require("../repositories/event");
+const EventService = require("../services/event");
 
 class UserService {
   async createUser(userData) {
@@ -31,6 +33,20 @@ class UserService {
 
   async updateUserRole(id, newRole) {
     await UserRepository.changeRole(id, newRole);
+  }
+
+  async getCurrentUser(id) {
+    const user = await UserRepository.read(id);
+
+    const countUserEvents = await EventRepository.countEventsByUserId(id);
+
+    const countOfEventsAttended = await EventService.getOfEventsAttended(id);
+
+    return {
+      user,
+      countUserEvents,
+      countOfEventsAttended,
+    };
   }
 }
 

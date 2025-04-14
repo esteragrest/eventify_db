@@ -47,7 +47,7 @@ const Comment = sequelize.define(
     },
   },
   {
-    tableName: "Events",
+    tableName: "comment",
   }
 );
 
