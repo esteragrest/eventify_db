@@ -2,7 +2,6 @@ const express = require("express");
 const EventController = require("../controllers/event");
 const router = express.Router();
 
-// Get /events/:id  - получение одного мероприятия(любой пользователь)
 // Post /events – создание мероприятия(авторизованный пользователь)
 // Put /events/:id – изменение мероприятия (сам пользователь, админ)
 // Delete /events/:id – удаление мероприятия (сам пользователь, админ)
@@ -11,5 +10,7 @@ const router = express.Router();
 // Get /events/weekly-events – получение мероприятий текущей недели(любой пользователь)
 
 router.get("/", EventController.getAllEvents);
+
+router.get("/:eventId", EventController.getEventById)
 
 module.exports = router;

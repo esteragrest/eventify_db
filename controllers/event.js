@@ -16,6 +16,22 @@ class EventController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async getEventById(req, res) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await EventService.getEventById(eventId);
+
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      res.status(200).json(event);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new EventController();
