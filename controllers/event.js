@@ -32,6 +32,25 @@ class EventController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async createEvent(req, res) {
+    try {
+      const organizerId = req.body.organizer_id;
+      const userId = req.user.id;
+
+      if (organizerId && organizerId !== userId) {
+        return res.status(403).json({
+          error: "You are not allowed to create event for this user.",
+        });
+      }
+
+      const eventData = { ...req.body };
+      const newEvent = await EventService.createEvent(eventData);
+      res.status(201).json(newEvent);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new EventController();

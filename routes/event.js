@@ -1,8 +1,8 @@
 const express = require("express");
 const EventController = require("../controllers/event");
 const router = express.Router();
+const isAuthenticated = require("../middlewares/isAuthenticated");
 
-// Post /events – создание мероприятия(авторизованный пользователь)
 // Put /events/:id – изменение мероприятия (сам пользователь, админ)
 // Delete /events/:id – удаление мероприятия (сам пользователь, админ)
 // Get /events/user/:userId/active-events – получение текущих мероприятий пользователя
@@ -11,6 +11,8 @@ const router = express.Router();
 
 router.get("/", EventController.getAllEvents);
 
-router.get("/:eventId", EventController.getEventById)
+router.get("/:eventId", EventController.getEventById);
+
+router.post("/", isAuthenticated, EventController.createEvent);
 
 module.exports = router;
