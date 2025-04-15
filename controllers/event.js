@@ -1,3 +1,4 @@
+const ROLES = require("../constans/roles");
 const EventService = require("../services/event");
 
 class EventController {
@@ -47,6 +48,35 @@ class EventController {
       const eventData = { ...req.body };
       const newEvent = await EventService.createEvent(eventData);
       res.status(201).json(newEvent);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async updateEvent(req, res) {
+    try {
+      const eventId = Number(req.params.eventId);
+      const userId = req.user.id;
+      const roleId = req.user.roleId;
+
+      const event = await EventService.getEventById(eventId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      const organizerId = event.organizer_id;
+
+      if (organizerId !== userId && roleId !== ROLES.admin) {
+        return res.status(403).json({
+          error: "Forbidden: You do not have permission to update this event.",
+        });
+      }
+
+      await EventService.updateEvent(eventId, { ...req.body });
+
+      res.status(200).json({
+        message: "Event updated successfully",
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
