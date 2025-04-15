@@ -49,31 +49,19 @@ class EventService {
   async getActiveEventsByUserId(userId) {
     const events = await EventRepository.findActiveEvents(userId);
 
-    if (events.length === 0) {
-      throw new Error("No such events were found.");
-    }
-
-    return events;
+    return events || [];
   }
 
   async getArchivedEventsByUserId(userId) {
     const events = await EventRepository.findArchivedEvents(userId);
 
-    if (events.length === 0) {
-      throw new Error("No such events were found.");
-    }
-
-    return events;
+    return events || [];
   }
 
   async getWeeklyEvents() {
     const events = await EventRepository.findWeeklyEvents();
 
-    if (events.length === 0) {
-      throw new Error("No such events were found.");
-    }
-
-    return events;
+    return events || [];
   }
 
   async getOfEventsAttended(userId) {

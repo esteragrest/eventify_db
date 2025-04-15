@@ -3,17 +3,29 @@ const EventController = require("../controllers/event");
 const router = express.Router();
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
-// Delete /events/:id – удаление мероприятия (сам пользователь, админ)
-// Get /events/user/:userId/active-events – получение текущих мероприятий пользователя
-// Get /events/user/:userId/archived-events – получение прошедших мероприятий пользователя
 // Get /events/weekly-events – получение мероприятий текущей недели(любой пользователь)
 
 router.get("/", EventController.getAllEvents);
 
-router.get("/:eventId", EventController.getEventById);
+router.get("/event/:eventId", EventController.getEventById);
 
 router.post("/", isAuthenticated, EventController.createEvent);
 
-router.put("/:eventId", isAuthenticated, EventController.updateEvent)
+router.put("/:eventId", isAuthenticated, EventController.updateEvent);
 
+router.delete("/:eventId", isAuthenticated, EventController.deleteEvent);
+
+router.get(
+  "/user/:userId/active-events",
+  isAuthenticated,
+  EventController.getActiveEventsByUserId
+);
+
+router.get(
+  "/user/:userId/archived-events",
+  isAuthenticated,
+  EventController.getArchivedEventsByUserId
+);
+
+router.get("/weekly-events", EventController.getWeeklyEvents);
 module.exports = router;

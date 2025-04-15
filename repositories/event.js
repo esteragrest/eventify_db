@@ -43,11 +43,12 @@ class EventRepository {
     const currentDate = new Date();
     return await Event.findAll({
       where: {
-        date: {
+        event_date: {
           [Op.gte]: currentDate,
         },
         organizer_id: userId,
       },
+      order: [["event_date", "ASC"]],
     });
   }
 
@@ -55,11 +56,12 @@ class EventRepository {
     const currentDate = new Date();
     return await Event.findAll({
       where: {
-        date: {
+        event_date: {
           [Op.lt]: currentDate,
         },
         organizer_id: userId,
       },
+      order: [["event_date", "ASC"]],
     });
   }
 
@@ -70,13 +72,13 @@ class EventRepository {
 
     return await Event.findAll({
       where: {
-        date: {
+        event_date: {
           [Op.gte]: currentDate,
           [Op.lte]: endOfWeek,
         },
       },
       limit: 8,
-      order: [["date", "ASC"]],
+      order: [["event_date", "ASC"]],
     });
   }
 

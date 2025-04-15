@@ -81,6 +81,75 @@ class EventController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async deleteEvent(req, res) {
+    try {
+      const eventId = req.params.eventId;
+      const userId = req.user.id;
+      const roleId = req.user.roleId;
+
+      const event = await EventService.getEventById(eventId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      const organizerId = event.organizer_id;
+
+      if (organizerId !== userId && roleId !== ROLES.admin) {
+        return res.status(403).json({
+          error: "Forbidden: You do not have permission to update this event.",
+        });
+      }
+
+      await EventService.deleteEvent(eventId);
+      res.status(200).json({
+        message: "Event deleted successfully",
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getActiveEventsByUserId(req, res) {
+    try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const activeEvents = await EventService.getActiveEventsByUserId(userId);
+
+      res.status(200).json(activeEvents);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getArchivedEventsByUserId(req, res) {
+    try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const activeEvents = await EventService.getArchivedEventsByUserId(userId);
+
+      res.status(200).json(activeEvents);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getWeeklyEvents(req, res) {
+    try {
+      const weeklyEvents = await EventService.getWeeklyEvents();
+      res.status(200).json(weeklyEvents);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new EventController();
