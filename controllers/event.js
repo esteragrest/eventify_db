@@ -1,5 +1,6 @@
 const ROLES = require("../constans/roles");
 const EventService = require("../services/event");
+const UserService = require("../services/user");
 
 class EventController {
   async getAllEvents(req, res) {
@@ -114,7 +115,9 @@ class EventController {
     try {
       const userId = Number(req.params.userId);
 
-      if (!userId) {
+      const user = await UserService.getUserById(userId);
+
+      if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 
@@ -130,7 +133,9 @@ class EventController {
     try {
       const userId = Number(req.params.userId);
 
-      if (!userId) {
+      const user = await UserService.getUserById(userId);
+
+      if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 

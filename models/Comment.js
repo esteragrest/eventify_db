@@ -32,7 +32,7 @@ const Comment = sequelize.define(
     parent_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: Comment,
+        model: "comments",
         key: "id",
       },
       onDelete: "CASCADE",
@@ -47,7 +47,7 @@ const Comment = sequelize.define(
     },
   },
   {
-    tableName: "comment",
+    tableName: "comments",
   }
 );
 

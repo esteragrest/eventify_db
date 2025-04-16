@@ -13,8 +13,8 @@ class CommentService {
     await CommentRepository.delete(id);
   }
 
-  async getCommentByEventId(eventId) {
-    return await CommentRepository.findCommentByEventId(eventId);
+  async getCommentsByEventId(eventId) {
+    return await CommentRepository.findCommentsByEventId(eventId);
   }
 }
 

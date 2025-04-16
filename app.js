@@ -5,6 +5,7 @@ const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/user");
 const eventsRoutes = require("./routes/event");
 const registrationsRoutes = require("./routes/registgration");
+const commentsRoutes = require("./routes/comment");
 
 const app = express();
 const PORT = 3000;
@@ -21,3 +22,4 @@ app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/events", eventsRoutes);
 app.use("/registrations", registrationsRoutes);
+app.use("/comments", commentsRoutes);

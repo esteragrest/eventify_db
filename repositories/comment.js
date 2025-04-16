@@ -13,7 +13,7 @@ class CommentRepository {
     await Comment.destroy({ where: { id } });
   }
 
-  async findCommentByEventId(eventId) {
+  async findCommentsByEventId(eventId) {
     return await Comment.findAll({ where: { event_id: eventId } });
   }
 }
