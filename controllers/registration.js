@@ -36,7 +36,7 @@ class RegistrationController {
 
   async getRegistrationByUserId(req, res) {
     try {
-      const { userId } = req.params;
+      const userId = Number(req.params.userId);
 
       if (req.user.id !== userId && req.user.roleId !== ROLES.admin) {
         return res.status(403).json({
@@ -80,6 +80,36 @@ class RegistrationController {
         registrationData
       );
       res.status(200).json(newRegistration);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async deleteRegistration(req, res) {
+    try {
+      const registrationIdParams = Number(req.params.registrationId);
+      const userId = req.user.id;
+      const roleId = req.user.roleId;
+
+      const registration = await RegistrationService.getRegistrationById(
+        registrationIdParams
+      );
+
+      if (!registration) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      const registeredUserId = registration.user_id;
+
+      if (registeredUserId !== userId && roleId !== ROLES.admin) {
+        return res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to delete this registration.",
+        });
+      }
+
+      await RegistrationService.deleteRegistration(registrationIdParams);
+      res.status(200).json({ message: "Event deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
