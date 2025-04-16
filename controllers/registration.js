@@ -63,6 +63,27 @@ class RegistrationController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async createRegistration(req, res) {
+    try {
+      const registeringUserId = req.body.user_id;
+      const userId = req.user.id;
+
+      if (registeringUserId && registeringUserId !== userId) {
+        return res.status(403).json({
+          error: "Forbiden: You cannot register from another user.",
+        });
+      }
+
+      const registrationData = { ...req.body };
+      const newRegistration = await RegistrationService.createRegistration(
+        registrationData
+      );
+      res.status(200).json(newRegistration);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new RegistrationController();
