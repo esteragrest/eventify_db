@@ -16,6 +16,10 @@ class RegistrationService {
   async getRegistrationByEventId(eventId) {
     return await RegistrationRepository.findRegistrationsByEventId(eventId);
   }
+
+  async getRegistrationsByUserId(userId) {
+    return await RegistrationRepository.findAllUserRegistrations(userId);
+  }
 }
 
 module.exports = new RegistrationService();

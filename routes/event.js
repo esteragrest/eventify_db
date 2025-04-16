@@ -3,8 +3,6 @@ const EventController = require("../controllers/event");
 const router = express.Router();
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
-// Get /events/weekly-events – получение мероприятий текущей недели(любой пользователь)
-
 router.get("/", EventController.getAllEvents);
 
 router.get("/event/:eventId", EventController.getEventById);

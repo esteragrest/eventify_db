@@ -77,6 +77,12 @@ class EventService {
 
     return countOfEventsAttended;
   }
+
+  async getEventsByIds(eventIds) {
+    const events = await EventRepository.findEventsByIds(eventIds);
+
+    return events || [];
+  }
 }
 
 module.exports = new EventService();

@@ -100,6 +100,15 @@ class EventRepository {
 
     return countOfEventsAttended;
   }
+
+  async findEventsByIds(eventIds) {
+    return await Event.findAll({
+      where: {
+        id: { [Op.in]: eventIds },
+      },
+      order: [["event_date", "ASC"]],
+    });
+  }
 }
 
 module.exports = new EventRepository();
