@@ -5,6 +5,10 @@ class CommentRepository {
     return await Comment.create(comment);
   }
 
+  async read(id) {
+    return await Comment.findByPk(id);
+  }
+
   async update(id, commentData) {
     await Comment.update(commentData, { where: { id } });
   }

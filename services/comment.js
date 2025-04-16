@@ -5,6 +5,10 @@ class CommentService {
     return await CommentRepository.create(commentData);
   }
 
+  async getCommentById(id) {
+    return await CommentRepository.read(id);
+  }
+
   async updateComment(id, commentData) {
     await CommentRepository.update(id, commentData);
   }
