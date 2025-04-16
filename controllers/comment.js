@@ -1,3 +1,4 @@
+const ROLES = require("../constans/roles");
 const CommentService = require("../services/comment");
 const EventService = require("../services/event");
 
@@ -43,6 +44,32 @@ class CommentController {
       const commentData = { ...req.body };
       const newComment = await CommentService.createComment(commentData);
       res.status(201).json(newComment);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async deleteComment(req, res) {
+    try {
+      const commentId = Number(req.params.commentId);
+      const userId = req.user.id;
+      const roleId = req.user.roleId;
+
+      const comment = await CommentService.getCommentById(commentId);
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+
+      const commentatorId = comment.user_id;
+
+      if (commentatorId !== userId && roleId !== ROLES.admin) {
+        return res.status(403).json({
+          error: "Forbidden: You can't delete someone else's comment.",
+        });
+      }
+
+      await CommentService.deleteComment(commentId);
+      res.status(200).json({ message: "Comment deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
