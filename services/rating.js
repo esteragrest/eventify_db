@@ -6,7 +6,7 @@ class RatingService {
   }
 
   async getRatingsByEventId(eventId) {
-    return await RatingRepository.findRatingsByEventId(eventId);
+    return await RatingRepository.findRatingsByEnventId(eventId);
   }
 
   async getAverageRatingByEventId(eventId) {
