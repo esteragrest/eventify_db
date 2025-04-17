@@ -52,7 +52,6 @@ class RegistrationController {
       //   return res.status(404).json({ error: "No registrations found for this user." });
       // }
 
-      // Получаем информацию о мероприятиях, на которые зарегистрирован пользователь
       const eventIds = userRegistrations.map(
         (registration) => registration.event_id
       );

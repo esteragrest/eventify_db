@@ -29,16 +29,6 @@ class EventRepository {
     });
   }
 
-  async findByTitle(title) {
-    return await Event.findAll({
-      where: {
-        title: {
-          [Op.like]: `%${title}%`,
-        },
-      },
-    });
-  }
-
   async findActiveEvents(userId) {
     const currentDate = new Date();
     return await Event.findAll({

@@ -74,6 +74,35 @@ class CommentController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async updateComment(req, res) {
+    try {
+      const commentId = Number(req.params.commentId);
+      const userId = req.user.id;
+      const roleId = req.user.roleId;
+
+      const comment = await CommentService.getCommentById(commentId);
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+
+      const commentatorId = comment.user_id;
+
+      if (commentatorId !== userId && roleId !== ROLES.admin) {
+        return res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to update this comment.",
+        });
+      }
+
+      await CommentService.updateComment(commentId, { ...req.body });
+      res.status(200).json({
+        message: "Comment updated successfully",
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new CommentController();

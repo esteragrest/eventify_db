@@ -36,16 +36,6 @@ class EventService {
     };
   }
 
-  async getEventsByTitle(title) {
-    const events = await EventRepository.findByTitle(title);
-
-    if (events.length === 0) {
-      throw new Error("No such events were found.");
-    }
-
-    return events;
-  }
-
   async getActiveEventsByUserId(userId) {
     const events = await EventRepository.findActiveEvents(userId);
 
