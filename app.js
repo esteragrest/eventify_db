@@ -7,6 +7,7 @@ const eventsRoutes = require("./routes/event");
 const registrationsRoutes = require("./routes/registgration");
 const commentsRoutes = require("./routes/comment");
 const ratingsRoutes = require("./routes/rating");
+const rolesRoutes = require("./routes/role");
 
 const app = express();
 const PORT = 3000;
@@ -25,3 +26,4 @@ app.use("/events", eventsRoutes);
 app.use("/registrations", registrationsRoutes);
 app.use("/comments", commentsRoutes);
 app.use("/ratings", ratingsRoutes);
+app.use("/roles", rolesRoutes);
