@@ -31,7 +31,7 @@ class UserController {
         httpOnly: true,
       });
 
-      res.status(201).json({ user: newUser });
+      res.status(201).json({ user: mapUser(newUser) });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -57,7 +57,7 @@ class UserController {
         httpOnly: true,
       });
 
-      res.status(200).json({ user });
+      res.status(200).json({ user: mapUser(user) });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

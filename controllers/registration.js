@@ -1,6 +1,8 @@
 const ROLES = require("../constans/roles");
 const RegistrationService = require("../services/registration");
 const EventService = require("../services/event");
+const mapRegistration = require("../helpers/mapRegistgration");
+const mapEvent = require("../helpers/mapEvent");
 
 class RegistrationController {
   async getRegistrationByEventId(req, res) {
@@ -28,7 +30,7 @@ class RegistrationController {
         eventId
       );
 
-      res.status(200).json(registrations);
+      res.status(200).json(registrations.map(mapRegistration));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -57,7 +59,7 @@ class RegistrationController {
       );
       const events = await EventService.getEventsByIds(eventIds);
 
-      res.status(200).json(events);
+      res.status(200).json(events.map(mapEvent));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -78,7 +80,7 @@ class RegistrationController {
       const newRegistration = await RegistrationService.createRegistration(
         registrationData
       );
-      res.status(200).json(newRegistration);
+      res.status(200).json(mapRegistration(newRegistration));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

@@ -1,4 +1,5 @@
 const ROLES = require("../constans/roles");
+const mapEvent = require("../helpers/mapEvent");
 const EventService = require("../services/event");
 const UserService = require("../services/user");
 
@@ -12,7 +13,10 @@ class EventController {
       page: Number(page) || 1,
     });
 
-    res.status(200).json(eventsWithLastPage);
+    res.status(200).json({
+      events: eventsWithLastPage.events.map(mapEvent),
+      lastPage: eventsWithLastPage.lastPage,
+    });
     try {
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -29,7 +33,7 @@ class EventController {
         return res.status(404).json({ error: "Event not found" });
       }
 
-      res.status(200).json(event);
+      res.status(200).json(mapEvent(event));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -48,7 +52,7 @@ class EventController {
 
       const eventData = { ...req.body };
       const newEvent = await EventService.createEvent(eventData);
-      res.status(201).json(newEvent);
+      res.status(201).json(mapEvent(newEvent));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -123,7 +127,7 @@ class EventController {
 
       const activeEvents = await EventService.getActiveEventsByUserId(userId);
 
-      res.status(200).json(activeEvents);
+      res.status(200).json(activeEvents.map(mapEvent));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -141,7 +145,7 @@ class EventController {
 
       const activeEvents = await EventService.getArchivedEventsByUserId(userId);
 
-      res.status(200).json(activeEvents);
+      res.status(200).json(activeEvents.map(mapEvent));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -150,7 +154,7 @@ class EventController {
   async getWeeklyEvents(req, res) {
     try {
       const weeklyEvents = await EventService.getWeeklyEvents();
-      res.status(200).json(weeklyEvents);
+      res.status(200).json(weeklyEvents.map(mapEvent));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

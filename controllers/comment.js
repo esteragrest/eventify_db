@@ -1,4 +1,5 @@
 const ROLES = require("../constans/roles");
+const mapComment = require("../helpers/mapComment");
 const CommentService = require("../services/comment");
 const EventService = require("../services/event");
 
@@ -15,7 +16,7 @@ class CommentController {
 
       const comments = await CommentService.getCommentsByEventId(eventId);
 
-      res.status(200).json(comments);
+      res.status(200).json(comments.map(mapComment));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -43,7 +44,7 @@ class CommentController {
 
       const commentData = { ...req.body };
       const newComment = await CommentService.createComment(commentData);
-      res.status(201).json(newComment);
+      res.status(201).json(mapComment(newComment));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

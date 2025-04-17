@@ -1,5 +1,6 @@
 const RatingService = require("../services/rating");
 const EventService = require("../services/event");
+const mapRating = require("../helpers/mapRating");
 
 class RatingController {
   async getRatingsByEventId(req, res) {
@@ -13,7 +14,7 @@ class RatingController {
 
     const ratings = await RatingService.getRatingsByEventId(eventId);
 
-    res.status(200).json(ratings);
+    res.status(200).json(ratings.map(mapRating));
     try {
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -61,7 +62,7 @@ class RatingController {
       const ratingData = { ...req.body };
       const newRating = await RatingService.createRating(ratingData);
 
-      res.status(201).json(newRating);
+      res.status(201).json(mapRating(newRating));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

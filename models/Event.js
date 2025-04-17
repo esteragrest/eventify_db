@@ -57,6 +57,9 @@ const Event = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    access_link: {
+      type: DataTypes.STRING(255),
+    },
   },
   {
     tableName: "events",
