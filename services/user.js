@@ -35,7 +35,7 @@ class UserService {
     await UserRepository.changeRole(id, newRole);
   }
 
-  async getCurrentUser(id) {
+  async getUserProfile(id) {
     const user = await UserRepository.read(id);
 
     const countUserEvents = await EventRepository.countEventsByUserId(id);

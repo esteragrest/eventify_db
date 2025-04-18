@@ -8,10 +8,17 @@ router.get("/", isAuthenticated, isAdmin, UserController.getAllUsers);
 
 router.get("/profile", isAuthenticated, UserController.getCurrentUser);
 
+router.get("/profile/:userId", UserController.getUserProfileById);
+
 router.put("/edit", isAuthenticated, UserController.updateUser);
 
-router.patch("/role/:id", isAuthenticated, isAdmin, UserController.updateUserRole)
+router.patch(
+  "/role/:id",
+  isAuthenticated,
+  isAdmin,
+  UserController.updateUserRole
+);
 
-router.delete('/:id', isAuthenticated, UserController.deleteUser)
+router.delete("/:id", isAuthenticated, UserController.deleteUser);
 
 module.exports = router;
