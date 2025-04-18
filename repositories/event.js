@@ -19,7 +19,10 @@ class EventRepository {
   }
 
   async list({ title, limit, offset }) {
-    const whereClause = title ? { title: { [Op.iLike]: `%${title}%` } } : {};
+    const whereClause = {
+      ...(title && { title: { [Op.iLike]: `%${title}%` } }),
+      type: { [Op.ne]: "closed" },
+    };
 
     return await Event.findAndCountAll({
       where: whereClause,

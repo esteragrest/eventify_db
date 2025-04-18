@@ -2,6 +2,7 @@ const mapEvent = require("../helpers/mapEvent");
 const EventService = require("../services/event");
 const UserService = require("../services/user");
 const checkOwnership = require("../helpers/checkOwnership");
+const generateEventLink = require("../helpers/generateEventLink");
 
 class EventController {
   async getAllEvents(req, res) {
@@ -26,11 +27,18 @@ class EventController {
   async getEventById(req, res) {
     try {
       const { eventId } = req.params;
+      const { accessLink } = req.query;
 
       const event = await EventService.getEventById(eventId);
 
       if (!event) {
         return res.status(404).json({ error: "Event not found" });
+      }
+
+      if (event.type === "closed" && event.access_link !== accessLink) {
+        return res
+          .status(403)
+          .json({ error: "Access denied: Invalid or missing link." });
       }
 
       res.status(200).json(mapEvent(event));
@@ -51,8 +59,16 @@ class EventController {
       }
 
       const eventData = { ...req.body };
+
+      if (eventData.type === "closed") {
+        eventData.access_link = generateEventLink();
+      }
+
       const newEvent = await EventService.createEvent(eventData);
-      res.status(201).json(mapEvent(newEvent));
+      res.status(201).json({
+        event: mapEvent(newEvent),
+        link: eventData.access_link || null,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
