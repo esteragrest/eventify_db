@@ -3,6 +3,7 @@ const RegistrationService = require("../services/registration");
 const EventService = require("../services/event");
 const mapRegistration = require("../helpers/mapRegistgration");
 const mapEvent = require("../helpers/mapEvent");
+const checkOwnership = require("../helpers/checkOwnership");
 
 class RegistrationController {
   async getRegistrationByEventId(req, res) {
@@ -49,11 +50,6 @@ class RegistrationController {
       const userRegistrations =
         await RegistrationService.getRegistrationsByUserId(userId);
 
-      // Если у пользователя нет регистраций
-      // if (!userRegistrations || userRegistrations.length === 0) {
-      //   return res.status(404).json({ error: "No registrations found for this user." });
-      // }
-
       const eventIds = userRegistrations.map(
         (registration) => registration.event_id
       );
@@ -97,16 +93,15 @@ class RegistrationController {
       );
 
       if (!registration) {
-        return res.status(404).json({ error: "Event not found" });
+        return res.status(404).json({ error: "Registration not found" });
       }
 
       const registeredUserId = registration.user_id;
-
-      if (registeredUserId !== userId && roleId !== ROLES.admin) {
-        return res.status(403).json({
-          error:
-            "Forbidden: You do not have permission to delete this registration.",
-        });
+      const ownershipError = checkOwnership(registeredUserId, userId, roleId);
+      if (ownershipError) {
+        return res
+          .status(ownershipError.status)
+          .json({ error: ownershipError.message });
       }
 
       await RegistrationService.deleteRegistration(registrationIdParams);

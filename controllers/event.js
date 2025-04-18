@@ -1,7 +1,7 @@
-const ROLES = require("../constans/roles");
 const mapEvent = require("../helpers/mapEvent");
 const EventService = require("../services/event");
 const UserService = require("../services/user");
+const checkOwnership = require("../helpers/checkOwnership");
 
 class EventController {
   async getAllEvents(req, res) {
@@ -70,11 +70,11 @@ class EventController {
       }
 
       const organizerId = event.organizer_id;
-
-      if (organizerId !== userId && roleId !== ROLES.admin) {
-        return res.status(403).json({
-          error: "Forbidden: You do not have permission to update this event.",
-        });
+      const ownershipError = checkOwnership(organizerId, userId, roleId);
+      if (ownershipError) {
+        return res
+          .status(ownershipError.status)
+          .json({ error: ownershipError.message });
       }
 
       await EventService.updateEvent(eventId, { ...req.body });
@@ -99,11 +99,11 @@ class EventController {
       }
 
       const organizerId = event.organizer_id;
-
-      if (organizerId !== userId && roleId !== ROLES.admin) {
-        return res.status(403).json({
-          error: "Forbidden: You do not have permission to update this event.",
-        });
+      const ownershipError = checkOwnership(organizerId, userId, roleId);
+      if (ownershipError) {
+        return res
+          .status(ownershipError.status)
+          .json({ error: ownershipError.message });
       }
 
       await EventService.deleteEvent(eventId);

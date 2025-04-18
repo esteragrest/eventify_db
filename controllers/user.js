@@ -177,10 +177,12 @@ class UserController {
       const currentUserId = req.user.id;
       const roleId = req.user.roleId;
 
-      if (targetUserId !== currentUserId && roleId !== ROLES.admin) {
-        return res.status(403).json({
-          message: "Forbidden: You do not have permission to delete this user.",
-        });
+
+      const ownershipError = checkOwnership(targetUserId, currentUserId, roleId);
+      if (ownershipError) {
+        return res
+          .status(ownershipError.status)
+          .json({ error: ownershipError.message });
       }
 
       const user = await UserService.getUserById(targetUserId);

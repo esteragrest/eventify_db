@@ -1,7 +1,7 @@
-const ROLES = require("../constans/roles");
 const mapComment = require("../helpers/mapComment");
 const CommentService = require("../services/comment");
 const EventService = require("../services/event");
+const checkOwnership = require("../helpers/checkOwnership");
 
 class CommentController {
   async getCommentsByEventId(req, res) {
@@ -62,11 +62,11 @@ class CommentController {
       }
 
       const commentatorId = comment.user_id;
-
-      if (commentatorId !== userId && roleId !== ROLES.admin) {
-        return res.status(403).json({
-          error: "Forbidden: You can't delete someone else's comment.",
-        });
+      const ownershipError = checkOwnership(commentatorId, userId, roleId);
+      if (ownershipError) {
+        return res
+          .status(ownershipError.status)
+          .json({ error: ownershipError.message });
       }
 
       await CommentService.deleteComment(commentId);
@@ -88,12 +88,11 @@ class CommentController {
       }
 
       const commentatorId = comment.user_id;
-
-      if (commentatorId !== userId && roleId !== ROLES.admin) {
-        return res.status(403).json({
-          error:
-            "Forbidden: You do not have permission to update this comment.",
-        });
+      const ownershipError = checkOwnership(commentatorId, userId, roleId);
+      if (ownershipError) {
+        return res
+          .status(ownershipError.status)
+          .json({ error: ownershipError.message });
       }
 
       await CommentService.updateComment(commentId, { ...req.body });
