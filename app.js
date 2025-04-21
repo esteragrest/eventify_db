@@ -8,6 +8,7 @@ const registrationsRoutes = require("./routes/registgration");
 const commentsRoutes = require("./routes/comment");
 const ratingsRoutes = require("./routes/rating");
 const rolesRoutes = require("./routes/role");
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
@@ -27,3 +28,4 @@ app.use("/api/registrations", registrationsRoutes);
 app.use("/api/comments", commentsRoutes);
 app.use("/api/ratings", ratingsRoutes);
 app.use("/api/roles", rolesRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));

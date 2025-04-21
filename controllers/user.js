@@ -116,31 +116,23 @@ class UserController {
     try {
       const { id } = req.user;
       const updateData = req.body;
-
+  
       const user = await UserService.getUserById(id);
       if (!user) {
         return res.status(404).json({ error: "User not Found" });
       }
 
-      if (user.id !== id) {
-        return res.status(403).json({
-          message: "Forbidden: You do not have permission to update this user.",
-        });
+      if (req.file) {
+        updateData.photo = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
       }
-
+  
       if (updateData.password) {
         const hashedPassword = await bcrypt.hash(updateData.password, 10);
         updateData.password = hashedPassword;
       }
-
-      if (updateData.roleId && updateData.roleId === ROLES.admin) {
-        return res.status(403).json({
-          message: "Forbidden: Only admins can create other admins.",
-        });
-      }
-
+  
       await UserService.updateUser(id, updateData);
-
+  
       res.status(200).json({
         message: "User updated successfully",
       });
@@ -148,6 +140,7 @@ class UserController {
       res.status(500).json({ error: "Failed to update user" });
     }
   }
+  
 
   async updateUserRole(req, res) {
     try {

@@ -49,21 +49,25 @@ class EventController {
 
   async createEvent(req, res) {
     try {
-      const organizerId = req.body.organizer_id;
+      const organizerId = Number(req.body.organizer_id);
       const userId = req.user.id;
-
+  
       if (organizerId && organizerId !== userId) {
         return res.status(403).json({
-          error: "You are not allowed to create event for this user.",
+          error: "You are not allowed to create an event for this user.",
         });
       }
-
+  
       const eventData = { ...req.body };
-
+  
+      if (req.file) {
+        eventData.photo = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      }
+  
       if (eventData.type === "closed") {
         eventData.access_link = generateEventLink();
       }
-
+  
       const newEvent = await EventService.createEvent(eventData);
       res.status(201).json({
         event: mapEvent(newEvent),
@@ -73,18 +77,18 @@ class EventController {
       res.status(500).json({ error: error.message });
     }
   }
-
+  
   async updateEvent(req, res) {
     try {
       const eventId = Number(req.params.eventId);
       const userId = req.user.id;
       const roleId = req.user.roleId;
-
+  
       const event = await EventService.getEventById(eventId);
       if (!event) {
         return res.status(404).json({ error: "Event not found" });
       }
-
+  
       const organizerId = event.organizer_id;
       const ownershipError = checkOwnership(organizerId, userId, roleId);
       if (ownershipError) {
@@ -92,9 +96,15 @@ class EventController {
           .status(ownershipError.status)
           .json({ error: ownershipError.message });
       }
-
-      await EventService.updateEvent(eventId, { ...req.body });
-
+  
+      const updateData = { ...req.body };
+  
+      if (req.file) {
+        updateData.photo = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      }
+  
+      await EventService.updateEvent(eventId, updateData);
+  
       res.status(200).json({
         message: "Event updated successfully",
       });
@@ -102,6 +112,7 @@ class EventController {
       res.status(500).json({ error: error.message });
     }
   }
+  
 
   async deleteEvent(req, res) {
     try {
