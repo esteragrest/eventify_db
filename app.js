@@ -20,10 +20,10 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-app.use("/auth", authRoutes);
-app.use("/users", usersRoutes);
-app.use("/events", eventsRoutes);
-app.use("/registrations", registrationsRoutes);
-app.use("/comments", commentsRoutes);
-app.use("/ratings", ratingsRoutes);
-app.use("/roles", rolesRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/events", eventsRoutes);
+app.use("/api/registrations", registrationsRoutes);
+app.use("/api/comments", commentsRoutes);
+app.use("/api/ratings", ratingsRoutes);
+app.use("/api/roles", rolesRoutes);
