@@ -18,7 +18,17 @@ class CommentService {
   }
 
   async getCommentsByEventId(eventId) {
-    return await CommentRepository.findCommentsByEventId(eventId);
+    const comments = await CommentRepository.findCommentsByEventId(eventId);
+
+    return comments.map(comment => ({
+      id: comment.id,
+      content: comment.content,
+      created_at: comment.created_at,
+      event_id: comment.event_id,
+      parent_id: comment.parent_id,
+      first_name: comment.User.first_name,
+      last_name: comment.User.last_name,
+    }));
   }
 }
 

@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const Event = require("../models/Event");
+const User = require("../models/User");
 
 class EventRepository {
   async create(event) {
@@ -7,7 +8,14 @@ class EventRepository {
   }
 
   async read(id) {
-    return await Event.findByPk(id);
+    return await Event.findByPk(id, {
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
+    });
   }
 
   async update(id, eventData) {
@@ -29,6 +37,12 @@ class EventRepository {
       limit,
       offset,
       order: [["event_date", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
     });
   }
 
@@ -42,6 +56,12 @@ class EventRepository {
         organizer_id: userId,
       },
       order: [["event_date", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
     });
   }
 
@@ -55,6 +75,12 @@ class EventRepository {
         organizer_id: userId,
       },
       order: [["event_date", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
     });
   }
 
@@ -72,34 +98,12 @@ class EventRepository {
       },
       limit: 8,
       order: [["event_date", "ASC"]],
-    });
-  }
-
-  async countEventsByUserId(userId) {
-    return await Event.count({
-      where: {
-        organizer_id: userId,
-      },
-    });
-  }
-
-  async countOfEventsAttended(eventIds) {
-    const countOfEventsAttended = await Event.count({
-      where: {
-        id: { [Op.in]: eventIds },
-        event_date: { [Op.lt]: new Date() },
-      },
-    });
-
-    return countOfEventsAttended;
-  }
-
-  async findEventsByIds(eventIds) {
-    return await Event.findAll({
-      where: {
-        id: { [Op.in]: eventIds },
-      },
-      order: [["event_date", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
     });
   }
 }

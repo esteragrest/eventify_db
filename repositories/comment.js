@@ -1,4 +1,5 @@
 const Comment = require("../models/Comment");
+const User = require("../models/User")
 
 class CommentRepository {
   async create(comment) {
@@ -18,7 +19,15 @@ class CommentRepository {
   }
 
   async findCommentsByEventId(eventId) {
-    return await Comment.findAll({ where: { event_id: eventId } });
+    return await Comment.findAll({
+      where: { event_id: eventId },
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
+    });
   }
 }
 

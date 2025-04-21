@@ -1,4 +1,5 @@
 const mapEvent = require("../helpers/mapEvent");
+const mapComment = require("../helpers/mapComment")
 const EventService = require("../services/event");
 const UserService = require("../services/user");
 const checkOwnership = require("../helpers/checkOwnership");
@@ -29,7 +30,7 @@ class EventController {
       const { eventId } = req.params;
       const { accessLink } = req.query;
 
-      const event = await EventService.getEventById(eventId);
+      const {event, comments} = await EventService.getEventById(eventId);
 
       if (!event) {
         return res.status(404).json({ error: "Event not found" });
@@ -41,7 +42,7 @@ class EventController {
           .json({ error: "Access denied: Invalid or missing link." });
       }
 
-      res.status(200).json(mapEvent(event));
+      res.status(200).json({ event: mapEvent(event), comments: comments.map(mapComment)});
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
