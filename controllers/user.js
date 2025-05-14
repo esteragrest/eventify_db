@@ -1,195 +1,243 @@
-const UserService = require("../services/user");
-const bcrypt = require("bcrypt");
-const { generate } = require("../helpers/token");
-const ROLES = require("../constans/roles");
-const mapUser = require("../helpers/mapUser");
+const UserService = require('../services/user');
+const bcrypt = require('bcrypt');
+const { generate } = require('../helpers/token');
+const ROLES = require('../constans/roles');
+const mapUser = require('../helpers/mapUser');
+const mapEvent = require('../helpers/mapEvent');
+const checkOwnership = require('../helpers/checkOwnership');
 
 class UserController {
-  async createUser(req, res) {
-    try {
-      const { password, role_id, ...userData } = req.body;
+	async createUser(req, res) {
+		try {
+			const { email, password, role_id, ...userData } = req.body;
 
-      if (role_id === ROLES.admin && req.user.role_id !== ROLES.admin) {
-        return res.status(403).json({
-          message: "Forbidden: Only admins can create other admins.",
-        });
-      }
+			const existingUser = await UserService.getUserByEmail(email);
+			if (existingUser) {
+				return res
+					.status(400)
+					.json({ error: 'The user with this email already exists' });
+			}
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+			if (
+				role_id &&
+				role_id === ROLES.admin &&
+				req.user.role_id !== ROLES.admin
+			) {
+				return res
+					.status(403)
+					.json({ message: 'Forbidden: Only admins can create other admins.' });
+			}
 
-      const newUserData = {
-        ...userData,
-        password: hashedPassword,
-        role_id: role_id || ROLES.user,
-      };
+			const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = await UserService.createUser(newUserData);
+			const newUserData = {
+				...userData,
+				email,
+				password: hashedPassword,
+				role_id: role_id || ROLES.user,
+			};
 
-      const token = generate({ id: newUser.id, roleId: newUser.role_id });
+			const newUser = await UserService.createUser(newUserData);
 
-      res.cookie("token", token, {
-        httpOnly: true,
-      });
+			const token = generate({ id: newUser.id, roleId: newUser.role_id });
 
-      res.status(201).json({ user: mapUser(newUser) });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			res.cookie('token', token, { httpOnly: true });
 
-  async loginUser(req, res) {
-    try {
-      const { email, password } = req.body;
-      const user = await UserService.getUserByEmail(email);
+			res.status(201).json({ user: mapUser(newUser) });
+		} catch (error) {
+			res.status(500).json({ error: error.message });
+		}
+	}
 
-      if (!user) {
-        return res.status(404).json({ error: "User not Found" });
-      }
+	async loginUser(req, res) {
+		try {
+			const { email, password } = req.body;
+			const user = await UserService.getUserByEmail(email);
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' });
+			}
 
-      const token = generate({ id: user.id, roleId: user.role_id });
+			const isPasswordValid = await bcrypt.compare(password, user.password);
+			if (!isPasswordValid) {
+				return res.status(401).json({ error: 'Invalid credentials' });
+			}
 
-      res.cookie("token", token, {
-        httpOnly: true,
-      });
+			const token = generate({ id: user.id, roleId: user.role_id });
 
-      res.status(200).json({ user: mapUser(user) });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			res.cookie('token', token, {
+				httpOnly: true,
+			});
 
-  async logoutUser(req, res) {
-    res.clearCookie("token", { httpOnly: true });
-    res.status(200).json({ message: "Logout successful" });
-  }
+			res.status(200).json({ user: mapUser(user) });
+		} catch (error) {
+			res.status(500).json({ error: error.message });
+		}
+	}
 
-  async getAllUsers(req, res) {
-    try {
-      const users = await UserService.getAllUsers();
-      res.status(200).json(users.map(mapUser));
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+	async logoutUser(req, res) {
+		res.clearCookie('token', { httpOnly: true });
+		res.status(200).json({ message: 'Logout successful' });
+	}
 
-  async getCurrentUser(req, res) {
-    try {
-      const { id } = req.user;
-      const userWithStats = await UserService.getUserProfile(id);
+	async getAllUsers(req, res) {
+		try {
+			const users = await UserService.getAllUsers();
+			res.status(200).json(users.map(mapUser));
+		} catch (error) {
+			res.status(500).json({ error: error.message });
+		}
+	}
 
-      if (!userWithStats || !userWithStats.user) {
-        return res.status(404).json({ error: "User not Found" });
-      }
+	async getCurrentUser(req, res) {
+		try {
+			const { id } = req.user;
 
-      res.status(200).json({
-        user: mapUser(userWithStats.user),
-        countUserEvents: userWithStats.countUserEvents,
-        countOfEventsAttended: userWithStats.countOfEventsAttended,
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			const {
+				user,
+				countUserEvents,
+				countOfEventsAttended,
+				activeEvents,
+				archivedEvents,
+			} = await UserService.getUserProfile(id);
 
-  async getUserProfileById(req, res) {
-    try {
-      const userId = Number(req.params.userId);
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' });
+			}
 
-      const userWithStats = await UserService.getUserProfile(userId);
+			res.status(200).json({
+				user: mapUser(user),
+				countUserEvents,
+				countOfEventsAttended,
+				activeEvents: activeEvents.map(mapEvent),
+				archivedEvents: archivedEvents.map(mapEvent),
+			});
+		} catch (error) {
+			res.status(500).json({ error: error.message });
+		}
+	}
 
-      res.status(200).json({
-        user: mapUser(userWithStats.user),
-        countUserEvents: userWithStats.countUserEvents,
-        countOfEventsAttended: userWithStats.countOfEventsAttended,
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+	async getUserProfileById(req, res) {
+		try {
+			const userId = Number(req.params.userId);
 
-  async updateUser(req, res) {
-    try {
-      const { id } = req.user;
-      const updateData = req.body;
-  
-      const user = await UserService.getUserById(id);
-      if (!user) {
-        return res.status(404).json({ error: "User not Found" });
-      }
+			const {
+				user,
+				countUserEvents,
+				countOfEventsAttended,
+				activeEvents,
+				archivedEvents,
+			} = await UserService.getUserProfile(userId);
 
-      if (req.file) {
-        updateData.photo = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-      }
-  
-      if (updateData.password) {
-        const hashedPassword = await bcrypt.hash(updateData.password, 10);
-        updateData.password = hashedPassword;
-      }
-  
-      await UserService.updateUser(id, updateData);
-  
-      res.status(200).json({
-        message: "User updated successfully",
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user" });
-    }
-  }
-  
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' });
+			}
 
-  async updateUserRole(req, res) {
-    try {
-      const { id } = req.params;
-      const { roleId } = req.body;
+			res.status(200).json({
+				user: mapUser(user),
+				countUserEvents,
+				countOfEventsAttended,
+				activeEvents: activeEvents.map(mapEvent),
+				archivedEvents: archivedEvents.map(mapEvent),
+			});
+		} catch (error) {
+			res.status(500).json({ error: error.message });
+		}
+	}
 
-      if (!roleId) {
-        return res.status(400).json({ error: "Role ID is required." });
-      }
+	async updateUser(req, res) {
+		try {
+			const idUpdatedUser = Number(req.params.userId);
+			const userId = req.user.id;
+			const roleId = req.user.roleId;
+			const updateData = req.body;
 
-      const user = await UserService.getUserById(id);
-      if (!user) {
-        return res.status(404).json({ error: "User not found." });
-      }
+			const user = await UserService.getUserById(idUpdatedUser);
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' });
+			}
 
-      await UserService.updateUserRole(id, roleId);
+			const accessError = checkOwnership(idUpdatedUser, userId, roleId);
+			if (accessError) {
+				return res
+					.status(accessError.status)
+					.json({ error: accessError.message });
+			}
 
-      res.status(200).json({ message: "User role updated successfully" });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update role." });
-    }
-  }
+			if (req.file) {
+				updateData.photo = `${req.protocol}://${req.get('host')}/uploads/${
+					req.file.filename
+				}`;
+			}
 
-  async deleteUser(req, res) {
-    try {
-      const targetUserId = Number(req.params.id);
-      const currentUserId = req.user.id;
-      const roleId = req.user.roleId;
+			if (updateData.password) {
+				const hashedPassword = await bcrypt.hash(updateData.password, 10);
+				updateData.password = hashedPassword;
+			}
 
+			const updatedUser = await UserService.updateUser(
+				idUpdatedUser,
+				updateData
+			);
 
-      const ownershipError = checkOwnership(targetUserId, currentUserId, roleId);
-      if (ownershipError) {
-        return res
-          .status(ownershipError.status)
-          .json({ error: ownershipError.message });
-      }
+			res.status(200).json({
+				user: mapUser(updatedUser),
+			});
+		} catch (error) {
+			res.status(500).json({ error: 'Failed to update user' });
+		}
+	}
 
-      const user = await UserService.getUserById(targetUserId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found." });
-      }
+	async updateUserRole(req, res) {
+		try {
+			const { id } = req.params;
+			const role_id = Number(req.body.role_id);
 
-      await UserService.deleteUser(targetUserId);
-      res.status(200).json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting user:", error.message);
-      res.status(500).json({ error: "Failed to delete user." });
-    }
-  }
+			if (!role_id) {
+				return res.status(400).json({ error: 'Role ID is required.' });
+			}
+
+			const user = await UserService.getUserById(id);
+			if (!user) {
+				return res.status(404).json({ error: 'User not found.' });
+			}
+
+			await UserService.updateUserRole(id, role_id);
+
+			res.status(200).json({ message: 'User role updated successfully' });
+		} catch (error) {
+			res.status(500).json({ error: 'Failed to update role.' });
+		}
+	}
+
+	async deleteUser(req, res) {
+		try {
+			const targetUserId = Number(req.params.id);
+			const currentUserId = req.user.id;
+			const roleId = req.user.roleId;
+
+			const ownershipError = checkOwnership(
+				targetUserId,
+				currentUserId,
+				roleId
+			);
+			if (ownershipError) {
+				return res
+					.status(ownershipError.status)
+					.json({ error: ownershipError.message });
+			}
+
+			const user = await UserService.getUserById(targetUserId);
+			if (!user) {
+				return res.status(404).json({ error: 'User not found.' });
+			}
+
+			await UserService.deleteUser(targetUserId);
+			res.status(200).json({ message: 'User deleted successfully' });
+		} catch (error) {
+			res.status(500).json({ error: 'Failed to delete user.' });
+		}
+	}
 }
 
 module.exports = new UserController();

@@ -9,7 +9,4 @@ router.post("/", isAuthenticated, CommentController.createComment)
 
 router.delete('/:commentId', isAuthenticated, CommentController.deleteComment)
 
-// Put - /comments/:id (оставивший комментарий, админ)
-router.put("/:commentId", isAuthenticated, CommentController.updateComment)
-
 module.exports = router;

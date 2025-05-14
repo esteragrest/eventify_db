@@ -12,6 +12,10 @@ class RatingService {
   async getAverageRatingByEventId(eventId) {
     return await RatingRepository.getAverageRating(eventId);
   }
+
+  async getRatingByEventIdAndUserId(eventId, userId) {
+    return await RatingRepository.findRatingByEventIdAndUserId(eventId, userId)
+  }
 }
 
 module.exports = new RatingService();

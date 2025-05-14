@@ -1,192 +1,200 @@
-const mapEvent = require("../helpers/mapEvent");
-const mapComment = require("../helpers/mapComment")
-const EventService = require("../services/event");
-const UserService = require("../services/user");
-const checkOwnership = require("../helpers/checkOwnership");
-const generateEventLink = require("../helpers/generateEventLink");
+const mapEvent = require('../helpers/mapEvent')
+const mapComment = require('../helpers/mapComment')
+const EventService = require('../services/event')
+const UserService = require('../services/user')
+const checkOwnership = require('../helpers/checkOwnership')
+const generateEventLink = require('../helpers/generateEventLink')
 
 class EventController {
-  async getAllEvents(req, res) {
-    const { title, limit, page } = req.query;
+	async getAllEvents(req, res) {
+		const { title, limit, page } = req.query
 
-    const eventsWithLastPage = await EventService.getAllEvents({
-      title,
-      limit: Number(limit) || 10,
-      page: Number(page) || 1,
-    });
+		const eventsWithLastPage = await EventService.getAllEvents({
+			title,
+			limit: Number(limit) || 10,
+			page: Number(page) || 1,
+		})
 
-    res.status(200).json({
-      events: eventsWithLastPage.events.map(mapEvent),
-      lastPage: eventsWithLastPage.lastPage,
-    });
-    try {
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+		res.status(200).json({
+			events: eventsWithLastPage.events.map(mapEvent),
+			lastPage: eventsWithLastPage.lastPage,
+		})
+		try {
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
 
-  async getEventById(req, res) {
-    try {
-      const { eventId } = req.params;
-      const { accessLink } = req.query;
+	async getEventById(req, res) {
+		try {
+			const { eventId } = req.params
+			const { accessLink } = req.query
 
-      const {event, comments} = await EventService.getEventById(eventId);
+			const eventWithComments = await EventService.getEventById(eventId)
 
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
-      }
+			if (!eventWithComments) {
+				return res.status(404).json({ error: 'Event not found' })
+			}
 
-      if (event.type === "closed" && event.access_link !== accessLink) {
-        return res
-          .status(403)
-          .json({ error: "Access denied: Invalid or missing link." });
-      }
+			const { event, comments } = eventWithComments
 
-      res.status(200).json({ event: mapEvent(event), comments: comments.map(mapComment)});
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			if (event.type === 'closed' && event.access_link !== accessLink) {
+				return res
+					.status(403)
+					.json({ error: 'Forbidden: access denied, invalid or missing link.' })
+			}
 
-  async createEvent(req, res) {
-    try {
-      const organizerId = Number(req.body.organizer_id);
-      const userId = req.user.id;
-  
-      if (organizerId && organizerId !== userId) {
-        return res.status(403).json({
-          error: "You are not allowed to create an event for this user.",
-        });
-      }
-  
-      const eventData = { ...req.body };
-  
-      if (req.file) {
-        eventData.photo = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-      }
-  
-      if (eventData.type === "closed") {
-        eventData.access_link = generateEventLink();
-      }
-  
-      const newEvent = await EventService.createEvent(eventData);
-      res.status(201).json({
-        event: mapEvent(newEvent),
-        link: eventData.access_link || null,
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-  
-  async updateEvent(req, res) {
-    try {
-      const eventId = Number(req.params.eventId);
-      const userId = req.user.id;
-      const roleId = req.user.roleId;
-  
-      const event = await EventService.getEventById(eventId);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
-      }
-  
-      const organizerId = event.organizer_id;
-      const ownershipError = checkOwnership(organizerId, userId, roleId);
-      if (ownershipError) {
-        return res
-          .status(ownershipError.status)
-          .json({ error: ownershipError.message });
-      }
-  
-      const updateData = { ...req.body };
-  
-      if (req.file) {
-        updateData.photo = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-      }
-  
-      await EventService.updateEvent(eventId, updateData);
-  
-      res.status(200).json({
-        message: "Event updated successfully",
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-  
+			res
+				.status(200)
+				.json({ event: mapEvent(event), comments: comments.map(mapComment) })
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
 
-  async deleteEvent(req, res) {
-    try {
-      const eventId = req.params.eventId;
-      const userId = req.user.id;
-      const roleId = req.user.roleId;
+	async createEvent(req, res) {
+		try {
+			const userId = req.user.id
 
-      const event = await EventService.getEventById(eventId);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
-      }
+			const eventData = { ...req.body, organizer_id: userId }
 
-      const organizerId = event.organizer_id;
-      const ownershipError = checkOwnership(organizerId, userId, roleId);
-      if (ownershipError) {
-        return res
-          .status(ownershipError.status)
-          .json({ error: ownershipError.message });
-      }
+			if (req.file) {
+				eventData.photo = `${req.protocol}://${req.get('host')}/uploads/${
+					req.file.filename
+				}`
+			}
 
-      await EventService.deleteEvent(eventId);
-      res.status(200).json({
-        message: "Event deleted successfully",
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			if (eventData.type === 'closed') {
+				eventData.access_link = generateEventLink()
+			}
 
-  async getActiveEventsByUserId(req, res) {
-    try {
-      const userId = Number(req.params.userId);
+			const newEvent = await EventService.createEvent(eventData)
+			res.status(201).json({
+				event: mapEvent(newEvent),
+				link: eventData.access_link || null,
+			})
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
 
-      const user = await UserService.getUserById(userId);
+	async updateEvent(req, res) {
+		try {
+			const eventId = Number(req.params.eventId)
+			const userId = req.user.id
+			const roleId = req.user.roleId
 
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+			const { event } = await EventService.getEventById(eventId)
+			if (!event) {
+				return res.status(404).json({ error: 'Event not found' })
+			}
 
-      const activeEvents = await EventService.getActiveEventsByUserId(userId);
+			const currentDate = new Date()
+			const eventDate = new Date(event.event_date)
+			if (eventDate < currentDate) {
+				return res
+					.status(400)
+					.json({ error: 'Editing past events is not allowed' })
+			}
 
-      res.status(200).json(activeEvents.map(mapEvent));
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			const organizerId = event.organizer_id
+			const ownershipError = checkOwnership(organizerId, userId, roleId)
+			if (ownershipError) {
+				return res
+					.status(ownershipError.status)
+					.json({ error: ownershipError.message })
+			}
 
-  async getArchivedEventsByUserId(req, res) {
-    try {
-      const userId = Number(req.params.userId);
+			const updateData = { ...req.body }
 
-      const user = await UserService.getUserById(userId);
+			if (req.file) {
+				updateData.photo = `${req.protocol}://${req.get('host')}/uploads/${
+					req.file.filename
+				}`
+			}
 
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+			await EventService.updateEvent(eventId, updateData)
 
-      const activeEvents = await EventService.getArchivedEventsByUserId(userId);
+			res.status(200).json({
+				message: 'Event updated successfully',
+			})
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
 
-      res.status(200).json(activeEvents.map(mapEvent));
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+	async deleteEvent(req, res) {
+		try {
+			const eventId = req.params.eventId
+			const userId = req.user.id
+			const roleId = req.user.roleId
 
-  async getWeeklyEvents(req, res) {
-    try {
-      const weeklyEvents = await EventService.getWeeklyEvents();
-      res.status(200).json(weeklyEvents.map(mapEvent));
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+			const { event } = await EventService.getEventById(eventId)
+			if (!event) {
+				return res.status(404).json({ error: 'Event not found' })
+			}
+
+			const organizerId = event.organizer_id
+			const ownershipError = checkOwnership(organizerId, userId, roleId)
+			if (ownershipError) {
+				return res
+					.status(ownershipError.status)
+					.json({ error: ownershipError.message })
+			}
+
+			await EventService.deleteEvent(eventId)
+			res.status(200).json({
+				message: 'Event deleted successfully',
+			})
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
+
+	async getActiveEventsByUserId(req, res) {
+		try {
+			const userId = Number(req.params.userId)
+
+			const user = await UserService.getUserById(userId)
+
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' })
+			}
+
+			const activeEvents = await EventService.getActiveEventsByUserId(userId)
+
+			res.status(200).json(activeEvents.map(mapEvent))
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
+
+	async getArchivedEventsByUserId(req, res) {
+		try {
+			const userId = Number(req.params.userId)
+
+			const user = await UserService.getUserById(userId)
+
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' })
+			}
+
+			const activeEvents = await EventService.getArchivedEventsByUserId(userId)
+
+			res.status(200).json(activeEvents.map(mapEvent))
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
+
+	async getWeeklyEvents(req, res) {
+		try {
+			const weeklyEvents = await EventService.getWeeklyEvents()
+			res.status(200).json(weeklyEvents.map(mapEvent))
+		} catch (error) {
+			res.status(500).json({ error: error.message })
+		}
+	}
 }
 
-module.exports = new EventController();
+module.exports = new EventController()

@@ -8,11 +8,11 @@ const checkOwnership = require("../helpers/checkOwnership");
 class RegistrationController {
   async getRegistrationByEventId(req, res) {
     try {
-      const { eventId } = req.params;
+      const eventId = Number(req.params.eventId);
       const userId = req.user.id;
       const roleId = req.user.roleId;
 
-      const event = await EventService.getEventById(eventId);
+      const { event } = await EventService.getEventById(eventId);
 
       if (!event) {
         return res.status(404).json({ error: "Event not found" });
@@ -61,6 +61,24 @@ class RegistrationController {
     }
   }
 
+  async getRegistrationByEventIdAndUserId(req, res) {
+    try {
+        const userId = req.user.id;
+        const eventId = req.params.eventId;
+
+        const registration = await RegistrationService.getRegistrationByEventIdAndUserId(eventId, userId);
+
+        if (!registration) {
+            return res.status(200).json({ isRegistered: false });
+        }
+
+        res.status(200).json({ isRegistered: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
   async createRegistration(req, res) {
     try {
       const registeringUserId = req.body.user_id;
@@ -68,7 +86,7 @@ class RegistrationController {
 
       if (registeringUserId && registeringUserId !== userId) {
         return res.status(403).json({
-          error: "Forbiden: You cannot register from another user.",
+          error: "Forbidden: You cannot register from another user.",
         });
       }
 
@@ -77,35 +95,6 @@ class RegistrationController {
         registrationData
       );
       res.status(200).json(mapRegistration(newRegistration));
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  async deleteRegistration(req, res) {
-    try {
-      const registrationIdParams = Number(req.params.registrationId);
-      const userId = req.user.id;
-      const roleId = req.user.roleId;
-
-      const registration = await RegistrationService.getRegistrationById(
-        registrationIdParams
-      );
-
-      if (!registration) {
-        return res.status(404).json({ error: "Registration not found" });
-      }
-
-      const registeredUserId = registration.user_id;
-      const ownershipError = checkOwnership(registeredUserId, userId, roleId);
-      if (ownershipError) {
-        return res
-          .status(ownershipError.status)
-          .json({ error: ownershipError.message });
-      }
-
-      await RegistrationService.deleteRegistration(registrationIdParams);
-      res.status(200).json({ message: "Event deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

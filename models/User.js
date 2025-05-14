@@ -19,7 +19,6 @@ const User = sequelize.define(
     },
     birth_date: {
       type: DataTypes.DATE,
-      allowNull: false,
     },
     email: {
       type: DataTypes.STRING(100),
@@ -32,7 +31,6 @@ const User = sequelize.define(
     },
     phone: {
       type: DataTypes.STRING(20),
-      allowNull: false,
     },
     photo: {
       type: DataTypes.STRING,

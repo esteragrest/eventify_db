@@ -12,7 +12,7 @@ class UserService {
   }
 
   async updateUser(id, userData) {
-    await UserRepository.update(id, userData);
+    return await UserRepository.update(id, userData);
   }
 
   async deleteUser(id) {
@@ -24,11 +24,9 @@ class UserService {
   }
 
   async getUserByEmail(email) {
-    const users = await UserRepository.findByEmail(email);
-    if (users.length === 0) {
-      throw new Error("No users found");
-    }
-    return users;
+    const user = await UserRepository.findByEmail(email);
+
+    return user;
   }
 
   async updateUserRole(id, newRole) {
@@ -42,10 +40,16 @@ class UserService {
 
     const countOfEventsAttended = await EventService.getOfEventsAttended(id);
 
+    const activeEvents = await EventService.getActiveEventsByUserId(id);
+
+    const archivedEvents = await EventService.getArchivedEventsByUserId(id);
+
     return {
       user,
       countUserEvents,
       countOfEventsAttended,
+      activeEvents,
+      archivedEvents,
     };
   }
 }

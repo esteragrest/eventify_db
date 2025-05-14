@@ -3,15 +3,21 @@ const User = require("../models/User")
 
 class CommentRepository {
   async create(comment) {
-    return await Comment.create(comment);
-  }
+    const newComment = await Comment.create(comment);
+    
+    return await Comment.findByPk(newComment.id, {
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name", "photo"],
+        },
+      ],
+    });
+  }  
+  
 
   async read(id) {
     return await Comment.findByPk(id);
-  }
-
-  async update(id, commentData) {
-    await Comment.update(commentData, { where: { id } });
   }
 
   async delete(id) {
@@ -24,9 +30,10 @@ class CommentRepository {
       include: [
         {
           model: User,
-          attributes: ["first_name", "last_name"],
+          attributes: ["first_name", "last_name", "photo"],
         },
       ],
+      order: [["created_at", "DESC"]],
     });
   }
 }

@@ -2,15 +2,22 @@ const CommentRepository = require("../repositories/comment");
 
 class CommentService {
   async createComment(commentData) {
-    return await CommentRepository.create(commentData);
-  }
+    const newComment = await CommentRepository.create(commentData);
+    return {
+      id: newComment.id,
+      content: newComment.content,
+      created_at: newComment.created_at,
+      event_id: newComment.event_id,
+      user_id: newComment.user_id,
+      parent_id: newComment.parent_id,
+      first_name: newComment.User.first_name,
+      last_name: newComment.User.last_name,
+      photo: newComment.User.photo,
+    };
+  }  
 
   async getCommentById(id) {
     return await CommentRepository.read(id);
-  }
-
-  async updateComment(id, commentData) {
-    await CommentRepository.update(id, commentData);
   }
 
   async deleteComment(id) {
@@ -25,9 +32,11 @@ class CommentService {
       content: comment.content,
       created_at: comment.created_at,
       event_id: comment.event_id,
+      user_id: comment.user_id,
       parent_id: comment.parent_id,
       first_name: comment.User.first_name,
       last_name: comment.User.last_name,
+      photo: comment.User.photo
     }));
   }
 }

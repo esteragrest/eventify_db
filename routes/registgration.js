@@ -15,11 +15,12 @@ router.get(
   RegistrationController.getRegistrationByUserId
 );
 
+router.get(
+  "/registrationForEvent/:eventId",
+  isAuthenticated,
+  RegistrationController.getRegistrationByEventIdAndUserId
+);
+
 router.post("/", isAuthenticated, RegistrationController.createRegistration);
 
-router.delete(
-  "/:registrationId",
-  isAuthenticated,
-  RegistrationController.deleteRegistration
-);
 module.exports = router;

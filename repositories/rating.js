@@ -23,6 +23,15 @@ class RatingRepository {
 
     return parseFloat(averageRating.toFixed(1));
   }
+
+  async findRatingByEventIdAndUserId(eventId, userId) {
+    return await Rating.findOne({
+      where: {
+        event_id: eventId,
+        user_id: userId,
+      }
+    });
+  }
 }
 
 module.exports = new RatingRepository();

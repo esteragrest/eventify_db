@@ -36,7 +36,7 @@ class EventRepository {
       where: whereClause,
       limit,
       offset,
-      order: [["event_date", "ASC"]],
+      order: [["event_date", "DESC"]],
       include: [
         {
           model: User,
@@ -55,7 +55,7 @@ class EventRepository {
         },
         organizer_id: userId,
       },
-      order: [["event_date", "ASC"]],
+      order: [["event_date", "DESC"]],
       include: [
         {
           model: User,
@@ -74,7 +74,7 @@ class EventRepository {
         },
         organizer_id: userId,
       },
-      order: [["event_date", "ASC"]],
+      order: [["event_date", "DESC"]],
       include: [
         {
           model: User,
@@ -95,9 +95,10 @@ class EventRepository {
           [Op.gte]: currentDate,
           [Op.lte]: endOfWeek,
         },
+        type: { [Op.ne]: "closed" },
       },
       limit: 8,
-      order: [["event_date", "ASC"]],
+      order: [["event_date", "DESC"]],
       include: [
         {
           model: User,
@@ -106,6 +107,36 @@ class EventRepository {
       ],
     });
   }
+
+  async countEventsByUserId(userId) {
+    return await Event.count({
+        where: { organizer_id: userId }
+    });
+  }
+
+  async countOfEventsAttended(eventIds) {
+    return await Event.count({
+      where: {
+        id: { [Op.in]: eventIds },
+        event_date: { [Op.lt]: new Date() }
+    }
+    })
+  }
+
+  async findEventsByIds(eventsIds) {
+    return await Event.findAll({
+      where: {
+        id: { [Op.in]: eventsIds }
+      },
+      include: [
+        {
+          model: User,
+          attributes: ["first_name", "last_name"],
+        },
+      ],
+    })
+  }
+
 }
 
 module.exports = new EventRepository();

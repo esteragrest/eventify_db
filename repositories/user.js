@@ -1,35 +1,37 @@
-const User = require("../models/User");
+const User = require('../models/User')
 
 class UserRepository {
-  async create(user) {
-    return await User.create(user);
-  }
+	async create(user) {
+		return await User.create(user)
+	}
 
-  async read(id) {
-    return await User.findByPk(id);
-  }
+	async read(id) {
+		return await User.findByPk(id)
+	}
 
-  async update(id, userData) {
-    await User.update(userData, { where: { id } });
-  }
+	async update(id, userData) {
+		await User.update(userData, { where: { id } })
 
-  async delete(id) {
-    await User.destroy({ where: { id } });
-  }
+		return await User.findByPk(id)
+	}
 
-  async list() {
-    return await User.findAll();
-  }
+	async delete(id) {
+		await User.destroy({ where: { id } })
+	}
 
-  async findByEmail(email) {
-    return await User.findOne({
-      where: { email },
-    });
-  }
+	async list() {
+		return await User.findAll()
+	}
 
-  async changeRole(id, newRole) {
-    await User.update({ role: newRole }, { where: { id } });
-  }
+	async findByEmail(email) {
+		return await User.findOne({
+			where: { email },
+		})
+	}
+
+	async changeRole(id, newRole) {
+		await User.update({ role_id: newRole }, { where: { id } })
+	}
 }
 
-module.exports = new UserRepository();
+module.exports = new UserRepository()

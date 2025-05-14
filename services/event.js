@@ -11,6 +11,10 @@ class EventService {
     const comments = await CommentService.getCommentsByEventId(id)
     const event = await EventRepository.read(id);
 
+    if(!event) {
+      return null;
+    }
+
     return {
       event: {...event.get(), first_name: event.User.first_name, last_name: event.User.last_name},
       comments
